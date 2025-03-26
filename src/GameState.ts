@@ -18,13 +18,24 @@ export class GameState {
 
   handleKeyPress(key: string) {
     switch (key) {
-      case 'w': this.moveDemon(Direction.UP); break;
-      case 's': this.moveDemon(Direction.DOWN); break;
-      case 'a': this.moveDemon(Direction.LEFT); break;
-      case 'd': this.moveDemon(Direction.RIGHT); break;
+      case 'w':
+      case 'ArrowUp':
+        this.moveDemon(Direction.UP);
+        break;
+      case 's':
+      case 'ArrowDown':
+        this.moveDemon(Direction.DOWN);
+        break;
+      case 'a':
+      case 'ArrowLeft':
+        this.moveDemon(Direction.LEFT);
+        break;
+      case 'd':
+      case 'ArrowRight':
+        this.moveDemon(Direction.RIGHT);
+        break;
     }
 
-    console.log(this.demonPos.value)
   }
 
   moveDemon(direction: Position) {
