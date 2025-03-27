@@ -1,8 +1,8 @@
-import {TileType} from "~/types/tile";
-import {Direction, Position} from "~/types/demon";
+import {Block, DIRECTIONS, Position, TileType} from "~/types/demon";
 
 export class GameState {
   grid: Ref<TileType[][]>;
+  blocks: Ref<Block[]>;
   demonPos: Ref<Position>;
   destinationPos: Position;
 
@@ -20,21 +20,25 @@ export class GameState {
     switch (key) {
       case 'w':
       case 'ArrowUp':
-        this.moveDemon(Direction.UP);
+        this.moveDemon(DIRECTIONS.UP);
         break;
       case 's':
       case 'ArrowDown':
-        this.moveDemon(Direction.DOWN);
+        this.moveDemon(DIRECTIONS.DOWN);
         break;
       case 'a':
       case 'ArrowLeft':
-        this.moveDemon(Direction.LEFT);
+        this.moveDemon(DIRECTIONS.LEFT);
         break;
       case 'd':
       case 'ArrowRight':
-        this.moveDemon(Direction.RIGHT);
+        this.moveDemon(DIRECTIONS.RIGHT);
         break;
+      default:
+        return
     }
+
+    this.checkWin()
 
   }
 
@@ -62,6 +66,14 @@ export class GameState {
       this.grid.value[pos.x][pos.y] = TileType.Empty
       this.grid.value[newPos.x][newPos.y] = TileType.Block
       this.moveDemon(direction)
+    }
+  }
+
+  checkWin() {
+    if (this.grid.value[this.destinationPos.x]?.[this.destinationPos.y] === TileType.Block) {
+      setTimeout(() => {
+        alert('You win!')
+      }, 100)
     }
   }
 

@@ -3,13 +3,35 @@ export interface Position {
   y: number
 }
 
-export interface Demon {
-  position: Position
+export enum TileType {
+  Wall = 0,
+  Empty = 1,
+  Block = 2
 }
 
-export const Direction: Record<any, Position> = {
+export interface Demon {
+  position: Position
+  direction: Position
+}
+
+export type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT'
+
+export const DIRECTIONS: Record<Direction, Position> = {
   UP: {x: -1, y: 0},
   DOWN: {x: 1, y: 0},
   LEFT: {x: 0, y: -1},
   RIGHT: {x: 0, y: 1},
+}
+
+export type BlockProperty = 'HOT' | 'COLD' | 'NORMAL'
+
+export interface BlockItem {
+  position: Position
+  insulation: Direction[]
+}
+
+export interface Block {
+  id: number
+  property: BlockProperty
+  items: BlockItem[]
 }

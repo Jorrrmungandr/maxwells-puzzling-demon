@@ -1,6 +1,6 @@
 <script setup lang="ts" generic="T extends any, O extends any">
-import {TileType} from "~/types/tile";
 import {GameState} from "~/GameState";
+import {TileType} from "~/types/demon";
 
 defineOptions({
   name: 'IndexPage',

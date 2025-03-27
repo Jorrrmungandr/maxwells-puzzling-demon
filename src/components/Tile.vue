@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import {TileType} from "~/types/tile";
 import Demon from "~/components/Demon.vue";
+import {TileType} from "~/types/demon";
 
 const { type, isDemon } = defineProps<{
   type: TileType
@@ -10,9 +10,9 @@ const { type, isDemon } = defineProps<{
 
 const tileStyle = computed(() => {
   return {
-    'bg-gray-400': type === TileType.Wall,
+    'bg-gray-300': type === TileType.Wall,
     'bg-gray-50': type === TileType.Empty,
-    'bg-gray-100 border-4 border-gray-400': type === TileType.Block,
+    'bg-gray-100 border-4 border-gray-400 z-1': type === TileType.Block,
   }
 })
 

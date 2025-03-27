@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import {TileType} from "~/types/tile";
-import {Position} from "~/types/demon";
+import {Position, TileType} from "~/types/demon";
 
 const { grid, demonPos, destinationPos } = defineProps<{
   grid: TileType[][]
