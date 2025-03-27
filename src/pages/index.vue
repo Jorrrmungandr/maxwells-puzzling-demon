@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="T extends any, O extends any">
-import {GameState} from "~/GameState";
+import {GameState} from "~/composables/GameState";
 import {TileType} from "~/types/demon";
 
 defineOptions({
