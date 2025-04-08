@@ -41,6 +41,16 @@ export class GameState {
 
   }
 
+  getTileType(pos: Position) {
+    if (pos.x < 0
+      || pos.x >= this.grid.value.length
+      || pos.y < 0
+      || pos.y >= this.grid.value[0].length
+    ) return TileType.Wall
+
+    return this.grid.value[pos.x]?.[pos.y]
+  }
+
   handleKeyPress(key: string) {
     switch (key) {
       case 'w':
@@ -74,13 +84,16 @@ export class GameState {
     }
 
     let blockId = this.findBlock(newPos)
-    if (blockId !== null) {
+    // 新位置有砖块且能推动
+    if (blockId !== null && this.canMove(direction, blockId)) {
       this.pushBlock(direction, blockId)
-    } else if (this.grid.value[newPos.x]?.[newPos.y] === TileType.Empty) {
+      this.demonPos.value = newPos
+    } else if (this.getTileType(newPos) === TileType.Empty) {
       this.demonPos.value = newPos
     }
   }
 
+  // 朝指定方向递归推动砖块
   pushBlock(direction: Position, blockId: number) {
     const block = this.blocks.value.find(block => block.id === blockId)!
 
@@ -89,18 +102,42 @@ export class GameState {
         x: item.position.x + direction.x,
         y: item.position.y + direction.y
       }
-      // 如果移动路径上有墙，就不能移动
-      if (this.grid.value[newPos.x]?.[newPos.y] === TileType.Wall) {
-        return
+
+      const newBlockId = this.findBlock(newPos)
+      if (newBlockId !== null && newBlockId) {
+        this.pushBlock(direction, newBlockId)
       }
-    }
-    // 可以移动
-    for (const item of block.items) {
+
       item.position.x += direction.x
       item.position.y += direction.y
     }
 
-    this.moveDemon(direction)
+    return true
+  }
+
+  // 判断砖块能否在某个方向上移动
+  canMove(direction: Position, blockId: number) {
+    const block = this.blocks.value.find(block => block.id === blockId)!
+
+    for (const item of block.items) {
+      const newPos = {
+        x: item.position.x + direction.x,
+        y: item.position.y + direction.y
+      }
+      // 如果移动路径上有墙，就不能移动
+      if (this.getTileType(newPos) === TileType.Wall) return false
+
+      // 如果移动路径上有砖块，判断该砖块是否可以移动 (注意还要判断这个砖块是不是本身)
+      const newBlockId = this.findBlock(newPos)
+      // block id可能为0, 因此要判断是否为null, 不能直接转为boolean
+      if (newBlockId !== null && newBlockId !== blockId) {
+        // 移动路径上有其他block, 判断该block是否可以移动
+        console.log(newPos, newBlockId)
+        if (!this.canMove(direction, newBlockId)) return false
+      }
+
+    }
+    return true
   }
 
   checkWin() {
