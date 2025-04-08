@@ -28,9 +28,10 @@ export type BlockProperty = 'HOT' | 'COLD' | 'NORMAL'
 export interface BlockItem {
   position: Position
   insulation: Direction[]
+  edges: Direction[]
 }
 
-export interface Block {
+export interface IBlock {
   id: number
   property: BlockProperty
   items: BlockItem[]

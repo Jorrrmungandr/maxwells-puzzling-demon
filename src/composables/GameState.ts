@@ -1,19 +1,44 @@
-import {Block, DIRECTIONS, Position, TileType} from "~/types/demon";
+import {IBlock, DIRECTIONS, Position, TileType} from "~/types/game";
+import {getBlockItemEdges} from "~/utils";
 
 export class GameState {
   grid: Ref<TileType[][]>;
-  blocks: Ref<Block[]>;
+  blocks: Ref<IBlock[]>;
   demonPos: Ref<Position>;
   destinationPos: Position;
 
-  constructor(grid: TileType[][], demonPos: Position, destinationPos: Position) {
+  constructor(
+    grid: TileType[][],
+    blocks: number[][][],
+    demonPos: Position,
+    destinationPos: Position
+  ) {
     this.grid = ref(grid);
     this.demonPos = ref(demonPos);
     this.destinationPos = destinationPos
 
+    // 由block的坐标创建blocks
+    this.blocks = ref([] as IBlock[])
+
+    blocks.forEach((block, index) => {
+      const blockObj: IBlock= {
+        id: index,
+        property: 'NORMAL',
+        items: block.map(([x, y]) => {
+          return {
+            position: { x, y },
+            edges: getBlockItemEdges(block, { x, y }),
+            insulation: []
+          }
+        })
+      }
+      this.blocks.value.push(blockObj)
+    })
+
     document.addEventListener('keydown', (event) => {
       this.handleKeyPress(event.key)
     })
+
   }
 
   handleKeyPress(key: string) {
@@ -48,25 +73,34 @@ export class GameState {
       y: this.demonPos.value.y + direction.y
     }
 
-    if (this.grid.value[newPos.x]?.[newPos.y] === TileType.Empty) {
+    let blockId = this.findBlock(newPos)
+    if (blockId !== null) {
+      this.pushBlock(direction, blockId)
+    } else if (this.grid.value[newPos.x]?.[newPos.y] === TileType.Empty) {
       this.demonPos.value = newPos
-    } else if (this.grid.value[newPos.x]?.[newPos.y] === TileType.Block) {
-      this.pushBlock(newPos, direction)
     }
-
   }
 
-  pushBlock(pos: Position, direction: Position) {
-    const newPos = {
-      x: pos.x + direction.x,
-      y: pos.y + direction.y
+  pushBlock(direction: Position, blockId: number) {
+    const block = this.blocks.value.find(block => block.id === blockId)!
+
+    for (const item of block.items) {
+      const newPos = {
+        x: item.position.x + direction.x,
+        y: item.position.y + direction.y
+      }
+      // 如果移动路径上有墙，就不能移动
+      if (this.grid.value[newPos.x]?.[newPos.y] === TileType.Wall) {
+        return
+      }
+    }
+    // 可以移动
+    for (const item of block.items) {
+      item.position.x += direction.x
+      item.position.y += direction.y
     }
 
-    if (this.grid.value[newPos.x]?.[newPos.y] === TileType.Empty) {
-      this.grid.value[pos.x][pos.y] = TileType.Empty
-      this.grid.value[newPos.x][newPos.y] = TileType.Block
-      this.moveDemon(direction)
-    }
+    this.moveDemon(direction)
   }
 
   checkWin() {
@@ -77,5 +111,15 @@ export class GameState {
     }
   }
 
+  findBlock(pos: Position) {
+    for (const block of this.blocks.value) {
+      for (const item of block.items) {
+        if (item.position.x === pos.x && item.position.y === pos.y) {
+          return block.id
+        }
+      }
+    }
+    return null
+  }
 }
 

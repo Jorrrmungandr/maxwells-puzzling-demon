@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import Demon from "~/components/Demon.vue";
-import {TileType} from "~/types/demon";
+import {TileType} from "~/types/game";
 
 const { type, isDemon } = defineProps<{
   type: TileType
@@ -12,27 +11,21 @@ const tileStyle = computed(() => {
   return {
     'bg-gray-300': type === TileType.Wall,
     'bg-gray-50': type === TileType.Empty,
-    'bg-gray-100 border-4 border-gray-400 z-1': type === TileType.Block,
+    // 'bg-gray-100 border-4 border-gray-400 z-1': type === TileType.Block,
   }
 })
 
 </script>
 
 <template>
-  <div
-    relative
-    flex
-    justify-center
-    items-center
-  >
-
+  <div relative flex justify-center items-center>
     <div
       w-15
       h-15
       :class="tileStyle"
     />
 
-    <!-- Point -->
+    <!-- point that represents a tile -->
     <div
       v-if="type === TileType.Empty"
       absolute
