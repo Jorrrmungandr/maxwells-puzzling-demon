@@ -1,4 +1,4 @@
-import {IBlock, DIRECTIONS, Position, TileType, TempProperty, Demon} from "~/types/game";
+import {IBlock, DIRECTIONS, Position, TileType, TempProperty, Demon, Snapshot} from "~/types/game";
 import {getBlockItemEdges} from "~/utils";
 
 export class GameState {
@@ -6,6 +6,8 @@ export class GameState {
   blocks: Ref<IBlock[]>;
   demon: Ref<Demon>;
   destinationPos: Position;
+  snapshots: Snapshot[] = [];
+  curSnapshotIdx: number;
 
   constructor(
     grid: TileType[][],
@@ -40,15 +42,29 @@ export class GameState {
       this.blocks.value.push(blockObj)
     })
 
+    // 初始化快照
+    // (vue3的ref是响应式的, 直接push会导致快照也变动, 因此要使用structuredClone)
+    // (vue3解构出ref中的对象要先用unref再用toRaw, 前者解构出内部reactive对象, 后者解构出原始对象)
+    this.snapshots.push({
+      blocks: structuredClone(toRaw(unref(this.blocks))),
+      demon: structuredClone(toRaw(unref(this.demon)))
+    })
+    this.curSnapshotIdx = 0
+
     // 处理this指向问题, bind会创建一个新的函数实例, 要这样才好移除
     this.handleKeyPress = this.handleKeyPress.bind(this)
+    this.handleUndo = this.handleUndo.bind(this)
 
     document.addEventListener('keydown', this.handleKeyPress)
+    document.addEventListener('keydown', this.handleUndo)
 
     watch(() => this.demon.value.isAlive, (isAlive) => {
       if (!isAlive) {
-        // demon死亡, 取消监听
+        // demon死亡, 取消移动的监听
         document.removeEventListener('keydown', this.handleKeyPress)
+      }
+      if (isAlive) {
+        document.addEventListener('keydown', this.handleKeyPress)
       }
     })
   }
@@ -91,10 +107,35 @@ export class GameState {
     }
 
     this.checkWin()
-
   }
 
+  handleUndo(event: KeyboardEvent) {
+    const key = event.key
+    if (key === 'u' || key === 'U') {
+      // 撤销操作
+      if (this.curSnapshotIdx > 0) {
+        this.curSnapshotIdx--
+        const lastSnapshot = this.snapshots[this.curSnapshotIdx] as Snapshot
+        // 使用structuredClone, 否则会导致快照也变动
+        // 这是因为给ref的value赋值成一个新对象, 会使该对象也具有响应式
+        this.blocks.value = structuredClone(lastSnapshot.blocks)
+        this.demon.value = structuredClone(lastSnapshot.demon)
+      }
+    } else if (key === 'y' || key === 'Y') {
+      // 重做操作
+      // 当前快照不是最后一个的时候才可以重做
+      if (this.curSnapshotIdx < this.snapshots.length - 1) {
+        this.curSnapshotIdx++
+        const nextSnapshot = this.snapshots[this.curSnapshotIdx] as Snapshot
+        this.blocks.value = structuredClone(nextSnapshot.blocks)
+        this.demon.value = structuredClone(nextSnapshot.demon)
+      }
+    }
+  }
+
+
   moveDemon(direction: Position) {
+    let canMove = false
     const newPos = {
       x: this.demon.value.pos.x + direction.x,
       y: this.demon.value.pos.y + direction.y
@@ -104,12 +145,29 @@ export class GameState {
     if (blockId !== null && this.canMove(direction, blockId)) {
       // 新位置有砖块且能推动
       this.pushBlock(direction, blockId)
-      this.demon.value.pos = newPos
+      canMove = true
     } else if (this.getTileType(newPos) === TileType.Empty) {
       // 新位置是空格, 直接移动
-      this.demon.value.pos = newPos
+      canMove = true
     }
-    this.updateDemonProperty()
+
+    if (canMove) {
+      this.demon.value.pos = newPos
+      // 移动之后, 更新热力值
+      this.updateDemonProperty()
+      // 热力值更新之后保存快照
+      // 如果当前快照不是最后一个, 说明操作历史出现分叉, 删除之前的分支(即当前快照后面的所有)
+      if (this.curSnapshotIdx < this.snapshots.length - 1) {
+        this.snapshots.splice(this.curSnapshotIdx + 1)
+        // console.log('diverge', this.curSnapshotIdx ,this.snapshots.map(el => el.demon.pos))
+      }
+      this.snapshots.push({
+        blocks: structuredClone(toRaw(unref(this.blocks))),
+        demon: structuredClone(toRaw(unref(this.demon)))
+      })
+      this.curSnapshotIdx++
+    }
+
   }
 
   // 更新demon的热力属性

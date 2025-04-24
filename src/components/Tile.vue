@@ -40,6 +40,7 @@ const tileStyle = computed(() => {
       absolute
       h-10
       w-12
+      z-11
       bg-blue
       style="clip-path: polygon(50% -50%,100% 50%,50% 150%,0 50%);"
     />

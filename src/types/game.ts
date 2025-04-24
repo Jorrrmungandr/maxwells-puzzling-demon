@@ -37,3 +37,8 @@ export interface IBlock {
   property: TempProperty
   items: IBlockItem[]
 }
+
+export interface Snapshot {
+  blocks: IBlock[],
+  demon: Demon
+}
