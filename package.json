@@ -20,9 +20,11 @@
   "devDependencies": {
     "@antfu/eslint-config": "^4.5.1",
     "@iconify-json/carbon": "^1.2.8",
+    "@iconify-json/mdi": "^1.2.3",
     "@types/node": "^22.13.9",
     "@unocss/eslint-config": "^66.1.0-beta.3",
     "@unocss/eslint-plugin": "^66.1.0-beta.3",
+    "@unocss/preset-icons": "66.1.0-beta.12",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vue-macros/volar": "^0.30.14",
     "@vue/test-utils": "^2.4.6",

@@ -10,8 +10,9 @@ export enum TileType {
 }
 
 export interface Demon {
-  position: Position
-  direction: Position
+  pos: Position
+  property: TempProperty
+  isAlive: boolean
 }
 
 export type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT'
@@ -23,9 +24,9 @@ export const DIRECTIONS: Record<Direction, Position> = {
   RIGHT: {x: 0, y: 1},
 }
 
-export type BlockProperty = 'HOT' | 'COLD' | 'NORMAL'
+export type TempProperty = 'hot' | 'cold' | 'normal'
 
-export interface BlockItem {
+export interface IBlockItem {
   position: Position
   insulation: Direction[]
   edges: Direction[]
@@ -33,6 +34,6 @@ export interface BlockItem {
 
 export interface IBlock {
   id: number
-  property: BlockProperty
-  items: BlockItem[]
+  property: TempProperty
+  items: IBlockItem[]
 }

@@ -1,33 +1,38 @@
-import {IBlock, DIRECTIONS, Position, TileType} from "~/types/game";
+import {IBlock, DIRECTIONS, Position, TileType, TempProperty, Demon} from "~/types/game";
 import {getBlockItemEdges} from "~/utils";
 
 export class GameState {
   grid: Ref<TileType[][]>;
   blocks: Ref<IBlock[]>;
-  demonPos: Ref<Position>;
+  demon: Ref<Demon>;
   destinationPos: Position;
 
   constructor(
     grid: TileType[][],
-    blocks: number[][][],
+    blocks: {items: number[][], property: TempProperty}[],
     demonPos: Position,
     destinationPos: Position
   ) {
     this.grid = ref(grid);
-    this.demonPos = ref(demonPos);
+    this.demon = ref({
+      pos: demonPos,
+      property: 'normal',
+      isAlive: true
+    }) as Ref<Demon>;
     this.destinationPos = destinationPos
 
-    // 由block的坐标创建blocks
+    // 由传入的blocks坐标和属性创建blocks对象
     this.blocks = ref([] as IBlock[])
 
     blocks.forEach((block, index) => {
       const blockObj: IBlock= {
         id: index,
-        property: 'NORMAL',
-        items: block.map(([x, y]) => {
+        property: block.property,
+        items: block.items.map(([x, y]) => {
           return {
             position: { x, y },
-            edges: getBlockItemEdges(block, { x, y }),
+            // 由block的item结构生成每个item暴露在外部的边
+            edges: getBlockItemEdges(block.items, { x, y }),
             insulation: []
           }
         })
@@ -35,10 +40,17 @@ export class GameState {
       this.blocks.value.push(blockObj)
     })
 
-    document.addEventListener('keydown', (event) => {
-      this.handleKeyPress(event.key)
-    })
+    // 处理this指向问题, bind会创建一个新的函数实例, 要这样才好移除
+    this.handleKeyPress = this.handleKeyPress.bind(this)
 
+    document.addEventListener('keydown', this.handleKeyPress)
+
+    watch(() => this.demon.value.isAlive, (isAlive) => {
+      if (!isAlive) {
+        // demon死亡, 取消监听
+        document.removeEventListener('keydown', this.handleKeyPress)
+      }
+    })
   }
 
   getTileType(pos: Position) {
@@ -48,10 +60,15 @@ export class GameState {
       || pos.y >= this.grid.value[0].length
     ) return TileType.Wall
 
+    if (this.findBlock(pos) !== null) {
+      return TileType.Block
+    }
+
     return this.grid.value[pos.x]?.[pos.y]
   }
 
-  handleKeyPress(key: string) {
+  handleKeyPress(event: KeyboardEvent) {
+    const key = event.key
     switch (key) {
       case 'w':
       case 'ArrowUp':
@@ -79,18 +96,87 @@ export class GameState {
 
   moveDemon(direction: Position) {
     const newPos = {
-      x: this.demonPos.value.x + direction.x,
-      y: this.demonPos.value.y + direction.y
+      x: this.demon.value.pos.x + direction.x,
+      y: this.demon.value.pos.y + direction.y
     }
 
     let blockId = this.findBlock(newPos)
-    // 新位置有砖块且能推动
     if (blockId !== null && this.canMove(direction, blockId)) {
+      // 新位置有砖块且能推动
       this.pushBlock(direction, blockId)
-      this.demonPos.value = newPos
+      this.demon.value.pos = newPos
     } else if (this.getTileType(newPos) === TileType.Empty) {
-      this.demonPos.value = newPos
+      // 新位置是空格, 直接移动
+      this.demon.value.pos = newPos
     }
+    this.updateDemonProperty()
+  }
+
+  // 更新demon的热力属性
+  updateDemonProperty() {
+    let coldCount = 0
+    let hotCount = 0
+    const adjacentBlockIds = this.getAdjacentBlocks(this.demon.value.pos)
+
+    // 遍历相邻的砖块, 计算冷热分别的值
+    for (const blockId of adjacentBlockIds) {
+      const block = this.blocks.value[blockId]
+      if (block.property === 'cold') {
+        coldCount += block.items.length
+      } else if (block.property === 'hot') {
+        hotCount += block.items.length
+      }
+    }
+
+    console.log(`cold: ${coldCount}, hot: ${hotCount}`)
+
+    if (coldCount > hotCount) {
+      this.demon.value.property = 'cold'
+      this.updateBlocksProperty(adjacentBlockIds, 'cold')
+    } else if (hotCount > coldCount) {
+      // demon死亡
+      this.demon.value.property = 'hot'
+      this.updateBlocksProperty(adjacentBlockIds, 'hot')
+      this.demon.value.isAlive = false
+    } else {
+      this.demon.value.property = 'normal'
+      this.updateBlocksProperty(adjacentBlockIds, 'normal')
+    }
+  }
+
+  // 找到指定位置的相邻的砖块 (包括间接相邻)
+  getAdjacentBlocks(pos: Position) {
+    // 使用了一个辅助函数, 维护一个集合, 防止重复block
+    function _getAdjacentBlocks(this: GameState, pos: Position, res: Set<number>) {
+      for (let dir of Object.values(DIRECTIONS)) {
+        const newPos = {
+          x: pos.x + dir.x,
+          y: pos.y + dir.y
+        }
+        let blockId = this.findBlock(newPos)
+        if (blockId !== null && !res.has(blockId)) {
+          // 将相邻的block id加入集合, 且要避免相同的block
+          res.add(blockId)
+
+          const block = this.blocks.value[blockId]
+          for (const item of block.items) {
+            // 递归计算相邻的砖块
+            res = res.union(_getAdjacentBlocks.call(this, item.position, res))
+          }
+        }
+      }
+
+      return res
+    }
+
+    return _getAdjacentBlocks.call(this, pos, new Set<number>())
+  }
+
+  updateBlocksProperty(blocks: Set<number>, property: TempProperty) {
+    blocks.forEach(blockId => {
+      const block = this.blocks.value[blockId]
+      block.property = property
+    })
   }
 
   // 朝指定方向递归推动砖块
@@ -104,7 +190,8 @@ export class GameState {
       }
 
       const newBlockId = this.findBlock(newPos)
-      if (newBlockId !== null && newBlockId) {
+      console.log(newBlockId)
+      if (newBlockId !== null && newBlockId !== blockId) {
         this.pushBlock(direction, newBlockId)
       }
 
@@ -132,7 +219,6 @@ export class GameState {
       // block id可能为0, 因此要判断是否为null, 不能直接转为boolean
       if (newBlockId !== null && newBlockId !== blockId) {
         // 移动路径上有其他block, 判断该block是否可以移动
-        console.log(newPos, newBlockId)
         if (!this.canMove(direction, newBlockId)) return false
       }
 
@@ -141,7 +227,7 @@ export class GameState {
   }
 
   checkWin() {
-    if (this.grid.value[this.destinationPos.x]?.[this.destinationPos.y] === TileType.Block) {
+    if (this.getTileType(this.destinationPos) === TileType.Block) {
       setTimeout(() => {
         alert('You win!')
       }, 100)

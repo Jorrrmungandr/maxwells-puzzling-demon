@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type {Position, TileType} from "~/types/game";
+import type {Demon, Position, TileType} from "~/types/game";
 
-const { grid, demonPos, destinationPos } = defineProps<{
+const { grid, demon, destinationPos } = defineProps<{
   grid: TileType[][]
-  demonPos: Position
+  demon: Demon
   destinationPos: Position
 }>()
 
@@ -16,7 +16,6 @@ const { grid, demonPos, destinationPos } = defineProps<{
       <div v-for="(tile, j) in row">
         <Tile
           :type="tile"
-          :isDemon="demonPos.x === i && demonPos.y === j"
           :isDestination="destinationPos.x === i && destinationPos.y === j"
         />
       </div>

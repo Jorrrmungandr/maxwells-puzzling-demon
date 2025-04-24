@@ -30,6 +30,9 @@ devDependencies:
   '@iconify-json/carbon':
     specifier: ^1.2.8
     version: 1.2.8
+  '@iconify-json/mdi':
+    specifier: ^1.2.3
+    version: 1.2.3
   '@types/node':
     specifier: ^22.13.9
     version: 22.13.9
@@ -39,6 +42,9 @@ devDependencies:
   '@unocss/eslint-plugin':
     specifier: ^66.1.0-beta.3
     version: 66.1.0-beta.3(eslint@9.21.0)(typescript@5.8.2)
+  '@unocss/preset-icons':
+    specifier: 66.1.0-beta.12
+    version: 66.1.0-beta.12
   '@vitejs/plugin-vue':
     specifier: ^5.2.1
     version: 5.2.1(vite@6.2.0)(vue@3.5.13)
@@ -712,6 +718,12 @@ packages:
       '@iconify/types': 2.0.0
     dev: true
 
+  /@iconify-json/mdi@1.2.3:
+    resolution: {integrity: sha512-O3cLwbDOK7NNDf2ihaQOH5F9JglnulNDFV7WprU2dSoZu3h3cWH//h74uQAB87brHmvFVxIOkuBX2sZSzYhScg==}
+    dependencies:
+      '@iconify/types': 2.0.0
+    dev: true
+
   /@iconify/types@2.0.0:
     resolution: {integrity: sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg==}
     dev: true
@@ -1307,6 +1319,10 @@ packages:
       unconfig: 7.0.0
     dev: true
 
+  /@unocss/core@66.1.0-beta.12:
+    resolution: {integrity: sha512-8+KJAoqA7eHC5cBJtod1AqWqQbYKfhTvQEgVQzZJ2sTYNTuQz4qdzPhUgKF83wURUhznGkdDL1Jxc6YITB1KPg==}
+    dev: true
+
   /@unocss/core@66.1.0-beta.3:
     resolution: {integrity: sha512-kBoMnU4prhpgvmPL6IEOkgENXGuGhuPW0SNZfOROL7IhK22T92fRqccqtyS0K//rzN4cer2NwvhXrGnbJEtDKQ==}
     dev: true
@@ -1375,6 +1391,16 @@ packages:
     resolution: {integrity: sha512-tm972hzhbIU3vTNEUuV5hd9RUKRUT5sxLCIkPs4gOP+DnzFMCKmGNJz1gn8OHdO7rRv6UihxqMo6i5LJLWeHAw==}
     dependencies:
       '@unocss/core': 66.1.0-beta.3
+    dev: true
+
+  /@unocss/preset-icons@66.1.0-beta.12:
+    resolution: {integrity: sha512-eiqHooDnubGtcx0b49uSNZu0BOX5hOLH7mJngfqb0w8ExMRkgG9iZIKkQw25TB3V9jUGfLHewfeH2J+H5LiIcg==}
+    dependencies:
+      '@iconify/utils': 2.3.0
+      '@unocss/core': 66.1.0-beta.12
+      ofetch: 1.4.1
+    transitivePeerDependencies:
+      - supports-color
     dev: true
 
   /@unocss/preset-icons@66.1.0-beta.3:

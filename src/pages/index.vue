@@ -3,6 +3,7 @@ import {GameState} from "~/composables/GameState";
 import {TileType} from "~/types/game";
 import {onMounted, useTemplateRef} from "vue";
 import Block from "~/components/Block.vue";
+import Demon from "~/components/Demon.vue";
 
 defineOptions({
   name: 'IndexPage',
@@ -19,10 +20,11 @@ let grid = [
 ] as TileType[][]
 
 const blocks = [
-  [[3, 5]],
-  [[4, 4], [4, 5]],
-  [[5, 6], [5, 7], [4, 7]],
-]
+  { items: [[2, 0]], property: 'cold'},
+  { items: [[3, 5]], property: 'cold'},
+  { items: [[4, 4], [4, 5]], property: 'cold'},
+  { items: [[5, 6], [5, 7], [4, 7]], property: 'hot'},
+] as any
 
 const state = new GameState(
   grid,
@@ -54,13 +56,18 @@ const start = computed(() => {
       <Grid
         :grid="state.grid.value"
         :blocks="state.blocks.value"
-        :demonPos="state.demonPos.value"
+        :demon="state.demon.value"
         :destinationPos="state.destinationPos"
       />
 
       <Block
         v-for="block in state.blocks.value"
         :block="block"
+        :startX="start"
+      />
+
+      <Demon
+        :demon="state.demon.value"
         :startX="start"
       />
 

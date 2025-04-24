@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import {TileType} from "~/types/game";
 
-const { type, isDemon } = defineProps<{
+const { type } = defineProps<{
   type: TileType
-  isDemon: boolean
   isDestination: boolean
 }>()
 
@@ -45,9 +44,6 @@ const tileStyle = computed(() => {
       style="clip-path: polygon(50% -50%,100% 50%,50% 150%,0 50%);"
     />
 
-    <Demon
-      v-if="isDemon"
-    />
   </div>
 
 
