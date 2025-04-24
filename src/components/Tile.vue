@@ -38,8 +38,8 @@ const tileStyle = computed(() => {
     <div
       v-if="isDestination"
       absolute
-      h-10
-      w-12
+      h-6
+      w-7
       z-11
       bg-blue
       style="clip-path: polygon(50% -50%,100% 50%,50% 150%,0 50%);"

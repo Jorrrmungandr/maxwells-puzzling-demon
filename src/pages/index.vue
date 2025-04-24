@@ -4,33 +4,17 @@ import {TileType} from "~/types/game";
 import {onMounted, useTemplateRef} from "vue";
 import Block from "~/components/Block.vue";
 import Demon from "~/components/Demon.vue";
+import {grid, blocks, demonPos, destinationPos} from "~/maps/map1-10"
 
 defineOptions({
   name: 'IndexPage',
 })
 
-let grid = [
-  [0,0,0,0,1,0,0,0,0],
-  [0,0,0,0,1,0,0,0,0],
-  [1,1,1,1,1,1,1,1,1],
-  [1,1,1,1,1,1,1,1,1],
-  [1,1,1,1,1,1,1,1,1],
-  [1,1,1,1,1,1,1,1,1],
-  [1,1,1,1,1,1,1,1,1],
-] as TileType[][]
-
-const blocks = [
-  { items: [[2, 0]], property: 'cold'},
-  { items: [[3, 5]], property: 'cold'},
-  { items: [[4, 4], [4, 5]], property: 'cold'},
-  { items: [[5, 6], [5, 7], [4, 7]], property: 'hot'},
-] as any
-
 const state = new GameState(
   grid,
   blocks,
-  {x: 3, y: 1},
-  {x: 0, y: 4}
+  demonPos,
+  destinationPos,
 )
 
 const container = useTemplateRef('container')

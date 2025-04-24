@@ -7,7 +7,7 @@
     <a
       i-carbon-logo-github icon-btn
       rel="noreferrer"
-      href="https://github.com/antfu-collective/vitesse-lite"
+      href="https://github.com/Jorrrmungandr/maxwells-puzzling-demon"
       target="_blank"
       title="GitHub"
     />

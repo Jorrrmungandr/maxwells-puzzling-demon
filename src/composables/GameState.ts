@@ -64,6 +64,7 @@ export class GameState {
         document.removeEventListener('keydown', this.handleKeyPress)
       }
       if (isAlive) {
+        // 撤回操作会导致死亡的demon复活, 要重新绑定监听
         document.addEventListener('keydown', this.handleKeyPress)
       }
     })
@@ -117,7 +118,7 @@ export class GameState {
         this.curSnapshotIdx--
         const lastSnapshot = this.snapshots[this.curSnapshotIdx] as Snapshot
         // 使用structuredClone, 否则会导致快照也变动
-        // 这是因为给ref的value赋值成一个新对象, 会使该对象也具有响应式
+        // 这是因为给ref的value赋值成一个新对象, 会将其转化为reactive对象
         this.blocks.value = structuredClone(lastSnapshot.blocks)
         this.demon.value = structuredClone(lastSnapshot.demon)
       }
